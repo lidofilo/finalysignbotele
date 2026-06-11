@@ -1,5 +1,5 @@
 import logging
-from services import TELEGRAM_TOKEN, GROQ_API_KEY, MY_CHAT_ID
+from config import TELEGRAM_TOKEN, GROQ_API_KEY, MY_CHAT_ID
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, BotCommand
 from telegram.ext import (
     ApplicationBuilder, 
