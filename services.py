@@ -8,7 +8,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# بيانات الاتصال بـ PostgreSQL (من السيرفر الجديد سواء كان Hetzner أو Oracle)
+# 🛠️ تفعيل وإعداد الـ logger ليتم استيراده في main.py بدون مشاكل
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# بيانات الاتصال بـ PostgreSQL 
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 DB_USER = os.getenv("DB_USER", "postgres")
@@ -29,7 +33,7 @@ class FinalySignService:
 
     @staticmethod
     def init_db():
-        """تهيئة الجدول بنظام PostgreSQL (Serial بدلاً من Autoincrement)"""
+        """تهيئة الجدول بنظام PostgreSQL"""
         conn = FinalySignService.get_db_connection()
         with conn.cursor() as cur:
             cur.execute('''
@@ -56,7 +60,12 @@ class FinalySignService:
         conn.commit()
         conn.close()
 
-# دالة التقرير اليومي (تعديل بسيط لقراءة PostgreSQL)
+    @staticmethod
+    def get_ai_reply(text: str):
+        """دالة مؤقتة للرد الذكي - يمكنك ربط مكتبة Groq هنا لاحقاً"""
+        return f"مرحباً بك، تم استلام رسالتك: *{text}*.\n جارٍ ربط نظام Groq AI الذكي..."
+
+# دالة التقرير اليومي
 async def send_daily_report(application):
     conn = FinalySignService.get_db_connection()
     df = pd.read_sql_query("SELECT * FROM potential_clients WHERE date = CURRENT_DATE", conn)
@@ -66,4 +75,3 @@ async def send_daily_report(application):
 
     file_path = f"FinalySign_Leads_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
     df.to_excel(file_path, index=False)
-    # ... كود الإرسال عبر البوت (كما هو سابقاً) ...
