@@ -11,11 +11,10 @@ from telegram.ext import (
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# استيراد الإعدادات والخدمات من الملف المنفصل
+# 🛠️ تم تعديل الاستيراد هنا (حذف TELEGRAM_TOKEN من الـ services)
 from services import (
     FinalySignService, 
     send_daily_report, 
-    TELEGRAM_TOKEN, 
     logger
 )
 
@@ -26,7 +25,6 @@ service = FinalySignService()
 # --- 2. إعدادات البداية والجدولة (POST_INIT) ---
 async def post_init_setup(application):
     """تهيئة أزرار القائمة الرسمية والمجدول الزمني"""
-    # ضبط أزرار القائمة (Menu Buttons) كما في الصورة التي أرفقتها
     commands = [
         BotCommand("start", "العودة للقائمة الرئيسية"),
         BotCommand("consult", "طلب استشارة فنية"),
@@ -43,7 +41,6 @@ async def post_init_setup(application):
     logger.info("✅ تم ضبط القائمة والمجدول بنجاح.")
 
 # --- 3. دوال المعالجة (Handlers Logic) ---
-
 def get_main_keyboard():
     """لوحة الأزرار الرئيسية أسفل الكيبورد"""
     return ReplyKeyboardMarkup([
@@ -60,7 +57,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # --- 4. منطق جمع بيانات العميل (Conversation Flow) ---
-
 async def ask_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "يسعدنا خدمتك في FinalySign! 🤝\nلنبدأ بتسجيل طلبك، ما هو اسمك الكريم؟", 
@@ -99,9 +95,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # --- 5. الرد الذكي بالذكاء الاصطناعي ---
-
 async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # خيارات سريعة للأزرار العادية
     text = update.message.text
     if text == '📝 عن FinalySign':
         await update.message.reply_text("FinalySign: مؤسسة متخصصة في البرمجة والتصميم والتحول الرقمي.")
@@ -110,13 +104,12 @@ async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("سيتم تحويل رسالتك للمختص، يرجى توضيح استفسارك.")
         return
 
-    # الرد عبر Groq
+    # الرد عبر الخدمة
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
     reply = service.get_ai_reply(text)
     await update.message.reply_text(reply, parse_mode='Markdown')
 
 # --- 6. تشغيل المحرك (Main Engine) ---
-
 if __name__ == '__main__':
     # تهيئة قاعدة البيانات عند الانطلاق
     service.init_db()
@@ -128,7 +121,7 @@ if __name__ == '__main__':
     conv_handler = ConversationHandler(
         entry_points=[
             MessageHandler(filters.Regex('^📞 طلب استشارة$'), ask_name),
-            CommandHandler("consult", ask_name) # ربط زر المنيو أيضاً
+            CommandHandler("consult", ask_name) 
         ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
